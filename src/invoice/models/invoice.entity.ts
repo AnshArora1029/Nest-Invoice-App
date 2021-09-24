@@ -1,4 +1,6 @@
 import { CustomerEntity } from 'src/customer/models/customer.entity';
+import { UserEntity } from 'src/users/models/users.entity';
+import { User } from 'src/users/models/users.interface';
 import {
   Column,
   CreateDateColumn,
@@ -59,6 +61,12 @@ export class InvoiceEntity {
 
   @Column()
   balance: number;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  @ManyToOne((_type) => UserEntity, (user) => user.invoices, {
+    eager: false,
+  })
+  createdBy: User;
 
   @CreateDateColumn()
   createdAt: Date;

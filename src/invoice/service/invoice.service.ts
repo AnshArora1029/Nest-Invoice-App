@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/users/models/users.interface';
+import { UsersService } from 'src/users/service/users.service';
 import { Repository } from 'typeorm';
 import { InvoiceDto } from '../dto/invoice.dto';
 import { InvoiceEntity } from '../models/invoice.entity';
@@ -9,9 +11,13 @@ export class InvoiceService {
   constructor(
     @InjectRepository(InvoiceEntity)
     private invoiceRepository: Repository<InvoiceEntity>,
+    private usersService: UsersService,
   ) {}
 
-  async createInvoice(invoiceDto: InvoiceDto): Promise<InvoiceEntity> {
+  async createInvoice(
+    invoiceDto: InvoiceDto,
+    creator: User,
+  ): Promise<InvoiceEntity> {
     const subTotal = invoiceDto.items.reduce((acc, item) => {
       return acc + Number(item.price * item.quantity);
     }, 0);
@@ -29,6 +35,7 @@ export class InvoiceService {
       taxAmount,
       payable,
       balance,
+      createdBy: creator,
     } as any);
   }
 
@@ -36,6 +43,14 @@ export class InvoiceService {
     return await this.invoiceRepository
       .createQueryBuilder('invoice')
       .where('invoice.customer = :id', { id })
+      .getMany();
+  }
+
+  async findByUserId(user: User): Promise<any> {
+    const id = user.id;
+    return await this.invoiceRepository
+      .createQueryBuilder('invoice')
+      .where('invoice.createdBy = :id', { id })
       .getMany();
   }
 

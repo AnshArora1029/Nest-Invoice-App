@@ -20,4 +20,7 @@ export class CreateCustomerDto {
 
   @IsNotEmpty()
   pincode: number;
+
+  @IsNotEmpty()
+  customer: string;
 }

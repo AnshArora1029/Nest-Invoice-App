@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { CustomerModule } from './customer/customer.module';
+import { PdfModule } from './pdf/pdf.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { CustomerModule } from './customer/customer.module';
     AuthModule,
     InvoiceModule,
     CustomerModule,
+    PdfModule,
     //UsersModule,
   ],
   controllers: [AppController],

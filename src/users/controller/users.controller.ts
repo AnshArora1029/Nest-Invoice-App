@@ -6,57 +6,111 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
-import { catchError, from, map, Observable, of } from 'rxjs';
+import { AuthCredentialsDto } from 'src/auth/authCredentialsDto/auth-CredentialsDto.dto';
 import { hasRoles } from 'src/auth/decorator/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { User } from '../models/users.interface';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { User, UserRole } from '../models/users.interface';
 import { UsersService } from '../service/users.service';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
+  @hasRoles(UserRole.ADMIN, UserRole.MANAGER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('/create')
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  createUser(@Body() user: User): Observable<User | Object> {
-    return this.usersService.createUser(user).pipe(
-      map((user: User) => user),
-      catchError((err) => of({ error: err.message })),
-    );
+  createAllUser(
+    @Body() createUserDto: CreateUserDto,
+    @Req() request,
+  ): Promise<any> | string {
+    if (request.user.flag === false) {
+      return 'Change password first';
+    }
+    const loggedUser = request.user;
+    return this.usersService.createUser(createUserDto, loggedUser);
   }
 
   @Post('/login')
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  login(@Body() user: User): Observable<Object> {
-    return this.usersService.login(user).pipe(
-      map((jwt: string) => {
-        return { access_token: jwt };
-      }),
-    );
+  login(@Body() authCredentialsDto: AuthCredentialsDto): Promise<any> {
+    return this.usersService.login(authCredentialsDto);
   }
 
+  @hasRoles(UserRole.ADMIN, UserRole.MANAGER, UserRole.CASHIER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/:id')
-  findOne(@Param('id') id: string): Observable<User> {
+  findOne(@Param('id') id: string, @Req() request): Promise<User> | string {
+    if (request.user.flag === false) {
+      return 'Change password first';
+    }
     return this.usersService.findOne(id);
   }
 
-  @hasRoles('Admin')
+  @hasRoles(UserRole.ADMIN, UserRole.MANAGER, UserRole.CASHIER)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
-  findAll() {
+  findAll(@Req() request) {
+    if (request.user.flag === false) {
+      return 'Change password first';
+    }
     return this.usersService.findAll();
   }
 
+  @hasRoles(UserRole.ADMIN, UserRole.MANAGER)
   @Delete('/delete/:id')
-  deleteOne(@Param('id') id: string) {
-    return this.usersService.deleteOne(id);
+  deleteOne(@Param('id') id: string, @Req() request) {
+    if (request.user.flag === false) {
+      return 'Change password first';
+    }
+    const loggedUser = request.user;
+    return this.usersService.deleteOne(id, loggedUser);
   }
 
+  @hasRoles(UserRole.ADMIN, UserRole.MANAGER, UserRole.CASHIER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Put('/:id')
-  updateOne(@Param('id') id: string, @Body() user: User): Observable<any> {
-    return from(this.usersService.updateOne(id, user));
+  updateOne(
+    @Param('id') id: string,
+    @Body() user: User,
+    @Req() request,
+  ): Promise<any> | string {
+    if (request.user.flag === false) {
+      return 'Change password first';
+    }
+    const loggedUser = request.user;
+    return this.usersService.updateOne(id, user, loggedUser);
+  }
+
+  @hasRoles(UserRole.ADMIN, UserRole.MANAGER, UserRole.CASHIER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Put('/:id/updatePassword')
+  updatePassword(
+    @Param('id') id: string,
+    @Body() password,
+    @Req() request,
+  ): Promise<any> {
+    const loggedUser = request.user;
+    const newPassword = password.password;
+    return this.usersService.updatePassword(id, newPassword, loggedUser);
+  }
+
+  @hasRoles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Put('/role/:id')
+  updateRole(
+    @Param('id') id: string,
+    @Body() role,
+    @Req() request,
+  ): Promise<any> | string {
+    if (request.user.flag === false) {
+      return 'Change password first';
+    }
+    const newRole = role.role;
+    const loggedUser = request.user;
+    return this.usersService.updateRole(id, newRole, loggedUser);
   }
 }

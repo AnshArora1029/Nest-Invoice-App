@@ -1,9 +1,11 @@
 import { InvoiceEntity } from 'src/invoice/models/invoice.entity';
+import { UserEntity } from 'src/users/models/users.entity';
 import {
   BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -33,8 +35,12 @@ export class CustomerEntity {
   pincode: number;
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  @ManyToOne((_type) => UserEntity, (user) => user.customers, { eager: false })
+  createdBy: UserEntity;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   @OneToMany((_type) => InvoiceEntity, (invoice) => invoice.customer, {
-    eager: true,
+    eager: false,
   })
   invoices: InvoiceEntity[];
 

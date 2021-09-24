@@ -1,4 +1,6 @@
 import { IsEmail } from 'class-validator';
+import { CustomerEntity } from 'src/customer/models/customer.entity';
+import { InvoiceEntity } from 'src/invoice/models/invoice.entity';
 import {
   Column,
   Entity,
@@ -6,7 +8,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   BeforeInsert,
+  OneToMany,
 } from 'typeorm';
+import { UserRole } from './users.interface';
 
 @Entity()
 export class UserEntity {
@@ -23,8 +27,26 @@ export class UserEntity {
   @IsEmail()
   email: string;
 
+  @Column({ default: false })
+  flag: boolean;
+
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.CASHIER })
+  role: UserRole;
+
   @Column()
   password: string;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  @OneToMany((_type) => CustomerEntity, (customer) => customer.createdBy, {
+    eager: false,
+  })
+  customers: CustomerEntity[];
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  @OneToMany((_type) => InvoiceEntity, (invoice) => invoice.createdBy, {
+    eager: false,
+  })
+  invoices: InvoiceEntity[];
 
   @CreateDateColumn()
   createdAt: Date;
@@ -33,7 +55,8 @@ export class UserEntity {
   updatedAt: Date;
 
   @BeforeInsert()
-  emailToLowerCase() {
+  emailAndRoleToLowerCase() {
     this.email.toLowerCase();
+    this.role.toLowerCase();
   }
 }

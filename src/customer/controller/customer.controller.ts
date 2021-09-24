@@ -6,8 +6,13 @@ import {
   Param,
   Post,
   Put,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
-import { from, Observable } from 'rxjs';
+import { hasRoles } from 'src/auth/decorator/roles.decorator';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { UserRole } from 'src/users/models/users.interface';
 import { CreateCustomerDto } from '../dto/create-customer.dto';
 import { Customer } from '../models/customer.interface';
 import { CustomerService } from '../service/customer.service';
@@ -16,33 +21,61 @@ import { CustomerService } from '../service/customer.service';
 export class CustomerController {
   constructor(private customerService: CustomerService) {}
 
+  @hasRoles(UserRole.ADMIN, UserRole.MANAGER, UserRole.CASHIER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('/create')
   createCustomer(
     @Body() createCustomerDto: CreateCustomerDto,
-  ): Observable<Customer> {
-    return from(this.customerService.createCustomer(createCustomerDto));
+    @Req() request,
+  ): Promise<Customer> | string {
+    if (request.user.flag === false) {
+      return 'Change password first';
+    }
+    const user = request.user;
+    return this.customerService.createCustomer(createCustomerDto, user);
   }
 
+  @hasRoles(UserRole.ADMIN, UserRole.MANAGER, UserRole.CASHIER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
-  getAllCustomers() {
+  getAllCustomers(@Req() request) {
+    if (request.user.flag === false) {
+      return 'Change password first';
+    }
     return this.customerService.findAll();
   }
 
+  @hasRoles(UserRole.ADMIN, UserRole.MANAGER, UserRole.CASHIER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/:id')
-  findOne(@Param('id') id: string): Observable<Customer> {
-    return from(this.customerService.findOne(id));
+  findOne(@Param('id') id: string, @Req() request): Promise<Customer> | string {
+    if (request.user.flag === false) {
+      return 'Change password first';
+    }
+    return this.customerService.findOne(id);
   }
 
+  @hasRoles(UserRole.ADMIN, UserRole.MANAGER, UserRole.CASHIER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete('/delete/:id')
-  deleteOne(@Param('id') id: string): Observable<any> {
-    return from(this.customerService.deleteOne(id));
+  deleteOne(@Param('id') id: string, @Req() request): Promise<any> | string {
+    if (request.user.flag === false) {
+      return 'Change password first';
+    }
+    return this.customerService.deleteOne(id);
   }
 
+  @hasRoles(UserRole.ADMIN, UserRole.MANAGER, UserRole.CASHIER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Put('/:id')
   updateOne(
     @Param('id') id: string,
     @Body() createCustomerDto: CreateCustomerDto,
-  ): Observable<any> {
-    return from(this.customerService.updateOne(id, createCustomerDto));
+    @Req() request,
+  ): Promise<any> | string {
+    if (request.user.flag === false) {
+      return 'Change password first';
+    }
+    return this.customerService.updateOne(id, createCustomerDto);
   }
 }
