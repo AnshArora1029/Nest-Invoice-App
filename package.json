@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@anchan828/nest-sendgrid": "^0.5.14",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^1.0.1",
     "@nestjs/core": "^8.0.0",
@@ -28,8 +29,13 @@
     "@nestjs/passport": "^8.0.1",
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/typeorm": "^8.0.2",
+    "@types/html-pdf": "^2.2.1",
     "bcrypt": "^5.0.1",
     "class-validator": "^0.13.1",
+    "ejs": "^3.1.6",
+    "hbs": "^4.1.2",
+    "html-pdf": "^3.0.1",
+    "html-to-pdf": "^0.1.11",
     "jwt-payload": "^1.0.7",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
@@ -37,7 +43,7 @@
     "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0",
+    "rxjs": "^7.0.0",
     "typeorm": "^0.2.37",
     "uuid": "^8.3.2"
   },
